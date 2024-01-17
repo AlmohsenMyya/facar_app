@@ -43,63 +43,60 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
   }
 
   void fetchData() async {
+    // print(" almohsen ${widget.isUpdate} myya $googlePlayLink + $appStoreLink");
+    if (widget.isUpdate) {
+      showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (BuildContext context) {
+          return Directionality(
+            textDirection: TextDirection.rtl,
+            child: AlertDialog(
+              title: Text('تحديث التطبيق'),
+              content: Text('عذرا يرجى تحديث التطبيق'),
+              actions: [
+                TextButton(
+                  child: Text('خروج'),
+                  onPressed: () {
+                    // Close the current screen and exit the app
+                    if (Platform.isAndroid) {
+                      SystemNavigator.pop();
+                    } else if (Platform.isIOS) {
+                      exit(0);
+                    }
+                  },
+                ),
+                TextButton(
+                  child: Text('تحديث'),
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    // Perform any required actions for redirecting to the store
+                    // You can use the googlePlayLink and appStoreLink variables here
 
-
-      // print(" almohsen ${widget.isUpdate} myya $googlePlayLink + $appStoreLink");
-      if (widget.isUpdate) {
-        showDialog(
-          barrierDismissible: false,
-          context: context,
-          builder: (BuildContext context) {
-            return Directionality(
-              textDirection: TextDirection.rtl,
-              child: AlertDialog(
-                title: Text('تحديث التطبيق'),
-                content: Text('عذرا يرجى تحديث التطبيق'),
-                actions: [
-                  TextButton(
-                    child: Text('خروج'),
-                    onPressed: () {
-                      // Close the current screen and exit the app
-                      if (Platform.isAndroid) {
-                        SystemNavigator.pop();
-                      } else if (Platform.isIOS) {
-                        exit(0);
-                      }
-                    },
-                  ),
-                  TextButton(
-                    child: Text('تحديث'),
-                    onPressed: () async {
-                      Navigator.of(context).pop();
-                      // Perform any required actions for redirecting to the store
-                      // You can use the googlePlayLink and appStoreLink variables here
-
-                      String link;
-                      if (Platform.isAndroid) {
-                        link = widget.googlePlayLink;
-                      } else if (Platform.isIOS) {
-                        link = widget.appStoreLink;
-                      } else {
-                        // Unsupported platform
-                        return;
-                      }
-                      await launch(link);
-                      //
-                      // if (await canLaunchUrl( Uri.parse(link))) {
-                      //
-                      // } else {
-                      //   // Failed to launch the link
-                      // }
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      }
-
+                    String link;
+                    if (Platform.isAndroid) {
+                      link = widget.googlePlayLink;
+                    } else if (Platform.isIOS) {
+                      link = widget.appStoreLink;
+                    } else {
+                      // Unsupported platform
+                      return;
+                    }
+                    await launch(link);
+                    //
+                    // if (await canLaunchUrl( Uri.parse(link))) {
+                    //
+                    // } else {
+                    //   // Failed to launch the link
+                    // }
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
   }
 
   @override
@@ -130,7 +127,7 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
                           allowUniversalAccessFromFileURLs: true,
                           verticalScrollBarEnabled: true,
                           userAgent:
-                              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36',
+                          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.122 Safari/537.36',
                         ),
                         android: AndroidInAppWebViewOptions(
 
@@ -146,16 +143,11 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
                           allowsBackForwardNavigationGestures: true,
                         ),
                       ),
-                      onLoadStart: (InAppWebViewController controller, Uri? url) async {
+                      onLoadStart: (InAppWebViewController controller,
+                          Uri? url) async {
                         if (url != null && url.scheme == 'whatsapp') {
-                          if (await canLaunch(url.toString())) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => SplashScreen()),
-                            );
-                            await launch(url.toString());
-                            return;
-                          }
+                          _goBack1(context);
+                          await launch(url.toString());
                         }
                         // Handle other URL schemes or continue loading the URL in the WebView
                         // ...
@@ -183,7 +175,10 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
                           builder: (context) {
                             return AlertDialog(
                               content: SizedBox(
-                                width: MediaQuery.of(context).size.width,
+                                width: MediaQuery
+                                    .of(context)
+                                    .size
+                                    .width,
                                 height: 400,
                                 child: InAppWebView(
                                   // Setting the windowId property isimportant here!
@@ -199,7 +194,7 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
                                       cacheEnabled: true,
                                       javaScriptEnabled: true,
                                       userAgent:
-                                          "Mozilla/5.0 (Linux; Android 9; LG-H870 Build/PKQ1.190522.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.106 Mobile Safari/537.36",
+                                      "Mozilla/5.0 (Linux; Android 9; LG-H870 Build/PKQ1.190522.001) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/83.0.4103.106 Mobile Safari/537.36",
                                     ),
                                     ios: IOSInAppWebViewOptions(
                                       allowsInlineMediaPlayback: true,
@@ -232,9 +227,15 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
   Future<bool> _goBack(BuildContext context) async {
     if (await webViewController.canGoBack()) {
       webViewController.goBack();
+
       return Future.value(false);
     } else {
       return Future.value(true);
     }
+  }
+
+  Future<void> _goBack1(BuildContext context) async {
+    webViewController.goBack();
+    webViewController.goBack();
   }
 }
